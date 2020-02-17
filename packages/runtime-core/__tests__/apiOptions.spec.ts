@@ -77,6 +77,42 @@ describe('api: options', () => {
     expect(serializeInner(root)).toBe(`<div>7</div>`)
   })
 
+  test('computed with arrow function', async () => {
+    const Comp = defineComponent({
+      data() {
+        return {
+          foo: 1
+        }
+      },
+      computed: {
+        bar: (vm: any): number => {
+          return vm.foo + 1
+        },
+        baz: (vm: any): number => {
+          return vm.bar + 1
+        }
+      },
+      render() {
+        return h(
+          'div',
+          {
+            onClick: () => {
+              this.foo++
+            }
+          },
+          this.bar + this.baz
+        )
+      }
+    } as any)
+    const root = nodeOps.createElement('div')
+    render(h(Comp), root)
+    expect(serializeInner(root)).toBe(`<div>5</div>`)
+
+    triggerEvent(root.children[0] as TestElement, 'click')
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>7</div>`)
+  })
+
   test('methods', async () => {
     const Comp = defineComponent({
       data() {
